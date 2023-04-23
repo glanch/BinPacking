@@ -1,10 +1,10 @@
-p FILE: Ins_01.bpp
+p FILE: Ins_02_infeasible.bpp
 p SOURCE: Christopher Glander
-p DESCRIPTION: Feasible testing instance for the BPP
+p DESCRIPTION: Infeasible testing instance for the BPP
 
 I   6 
 
-b   10
+b   2
 
 w   0   4
 w   1   8
