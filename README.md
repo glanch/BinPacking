@@ -23,7 +23,7 @@ This is a program, which reads an instance of an bpp and solves the bpp with the
 ## Compact model BPP
 
 ```math
-\min \sum_{j \in \mathcal{J}} Y_{ij} \\
+\min \sum_{j \in \mathcal{J}} Y_{j} \\
 
 s.t. \\
 
