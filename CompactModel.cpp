@@ -61,6 +61,11 @@ CompactModel::CompactModel(Instance* ins)
 
    // set all dimensions for X_ij, with empty pointers
    _var_X.resize(_ins->_nbItems); // first dimension of X_ij is equal to the amount of items in this instance
+
+   for( int i = 0; i < _ins->_nbItems; ++i )
+   {
+      _var_X[i].resize(_ins->_nbItems); // second dimension of X_ij is equal to the amount of bins in this instance
+   }
    // create and add the variable Y_ij to the model
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
@@ -76,6 +81,8 @@ CompactModel::CompactModel(Instance* ins)
                             0, // objective function coefficient, this is equal to 0 because the variable does not
                                // appear in the objective (1)
                             SCIP_VARTYPE_BINARY); // variable type
+
+         SCIPaddVar(_scipCM, _var_X[i][j]); // add var to scip-env
       }
    }
    //#####################################################################################################################
