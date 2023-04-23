@@ -40,8 +40,8 @@ public:
    CompactModel(Instance* ins);
 
    // destructor
-   ~CompactModel(); 
-   
+   ~CompactModel();
+
    // solve the problem
    void solve();
 
@@ -64,6 +64,8 @@ private:
    // constraints
    vector<SCIP_CONS*> _cons_capacity_and_linking; // capacity and linking constraint for every bin: bin capacity is
                                                   // respected, item i can only be placed in bin j if bin j is used
-   vector<SCIP_CONS*>
-      _cons_unique_assignment; // unique assignment constraint: every item i is placed in exactly one bin j
+                                                  // dimension: number of bins
+   vector<SCIP_CONS*> _cons_unique_assignment;    // unique assignment constraint: every item i is placed in exactly one
+                                                  // bin j
+                                                  // dimension: number of items
 };

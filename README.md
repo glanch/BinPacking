@@ -18,7 +18,7 @@ This is a program, which reads an instance of an bpp and solves the bpp with the
 | Entscheidungsvariablen |                        |
 | ---------------------- | ---------------------- |
 | $X_{ij} \in\{0, 1\}$ | = 1 if we pack item $i$ into bin $j$, 0 otherwise |
-| $Y_{j}$ | =1 if we use bin $j$, 0 otherwise |
+| $Y_{j} \in\{0, 1\}$ | =1 if we use bin $j$, 0 otherwise |
 
 ## Compact model BPP
 

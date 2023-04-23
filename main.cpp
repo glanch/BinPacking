@@ -33,8 +33,8 @@ int main()
    compMod->displaySolution();
 
    // after we are finished, we free the memory
-   // delete compMod;
-   // delete ins;
+   delete compMod;
+   delete ins;
 
    return 0;
 }

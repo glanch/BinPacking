@@ -53,7 +53,7 @@ void Instance::read(string nameFile)
 
       case 'b': // read b : bin capacity parameter
       {
-         int val = 0;
+         double val;
          ss >> val;
          par_b = val;
          break;
@@ -61,7 +61,8 @@ void Instance::read(string nameFile)
 
       case 'w': // read w_i: weight for item i
       {
-         int item, weight = 0;
+         int item;
+         double weight;
          ss >> item >> weight;
          par_w[item] = weight;
          break;
@@ -83,6 +84,7 @@ void Instance::display()
 {
    cout << "Instance: "<< endl;
 
+   cout << "Number of Bins J: " << _nbBins << endl;
    cout << "Number of Items I: " << _nbItems << endl;
    cout << "Weights of item i: " << endl;
    for( int i = 0; i < _nbItems; ++i )

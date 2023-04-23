@@ -32,14 +32,14 @@ CompactModel::CompactModel(Instance* ins)
    // create helping-dummy for the name of variables and constraints
    char var_cons_name[255];
 
-   //#####################################################################################################################
-   // Create and add all variables
-   //#####################################################################################################################
+   // #####################################################################################################################
+   //  Create and add all variables
+   // #####################################################################################################################
 
    // binary variable Y_j
 
    // set all dimensions for Y_i, with empty pointers
-   _var_Y.resize(_ins->_nbBins);
+   _var_Y.resize(_ins->_nbBins, nullptr);
 
    for( int j = 0; j < _ins->_nbBins; ++j )
    {
@@ -56,15 +56,16 @@ CompactModel::CompactModel(Instance* ins)
       SCIPaddVar(_scipCM, _var_Y[j]); // add var to scip-env
    }
 
-   //#####################################################################################################################
-   // binary variable X_ij
+   // #####################################################################################################################
+   //  binary variable X_ij
 
    // set all dimensions for X_ij, with empty pointers
    _var_X.resize(_ins->_nbItems); // first dimension of X_ij is equal to the amount of items in this instance
 
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
-      _var_X[i].resize(_ins->_nbItems); // second dimension of X_ij is equal to the amount of bins in this instance
+      _var_X[i].resize(_ins->_nbItems,
+                       nullptr); // second dimension of X_ij is equal to the amount of bins in this instance
    }
    // create and add the variable Y_ij to the model
    for( int i = 0; i < _ins->_nbItems; ++i )
@@ -85,12 +86,12 @@ CompactModel::CompactModel(Instance* ins)
          SCIPaddVar(_scipCM, _var_X[i][j]); // add var to scip-env
       }
    }
-   //#####################################################################################################################
-   // Add restrictions
-   //#####################################################################################################################
+   // #####################################################################################################################
+   //  Add restrictions
+   // #####################################################################################################################
 
-   //#####################################################################################################################
-   // restriction (2) in lecture handout: unique assignment constraints
+   // #####################################################################################################################
+   //  restriction (2) in lecture handout: unique assignment constraints
 
    // sum(j in J, X_ij) = 1 for all i in I
    // is equal to:
@@ -98,7 +99,7 @@ CompactModel::CompactModel(Instance* ins)
 
    // set all dimension for constraint with empty pointer
 
-   _cons_unique_assignment.resize(_ins->_nbItems); // dimension is equal to the number of items in theinstance
+   _cons_unique_assignment.resize(_ins->_nbItems, nullptr); // dimension is equal to the number of items in theinstance
 
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
@@ -121,8 +122,8 @@ CompactModel::CompactModel(Instance* ins)
       SCIPaddCons(_scipCM, _cons_unique_assignment[i]);
    }
 
-   //#####################################################################################################################
-   // restriction (3) in lecture handout: capacity and linking constraints
+   // #####################################################################################################################
+   //  restriction (3) in lecture handout: capacity and linking constraints
 
    // sum(i in I, w_i * X_ij) <= b * Y_j for all bins j in J
    // is equal to:
@@ -156,9 +157,9 @@ CompactModel::CompactModel(Instance* ins)
       SCIPaddCons(_scipCM, _cons_capacity_and_linking[j]); // add constraint to the scip-env
    }
 
-   //#####################################################################################################################
-   // Generate LP file
-   //#####################################################################################################################
+   // #####################################################################################################################
+   //  Generate LP file
+   // #####################################################################################################################
 
    // Generate a file to show the LP-Program, that is build. "FALSE" = we get our specific choosen names.
    SCIPwriteOrigProblem(_scipCM, "compact_model_bpp.lp", "lp", FALSE);
@@ -168,9 +169,9 @@ CompactModel::CompactModel(Instance* ins)
  * @brief Destroy the Compact Model:: Compact Model object
  *
  * @note This is the destructor for the Compact Model class. It releases all constraints and variables associated with
- * the model, and then releases the SCIP object. It releases all NoSelfTour-constraints, shortCycles-constraints,
- * oneTourPerDest-constraints, Arriving-constraints, Leaving-constraints and capacity-constraints. It also releases all
- * X_ijm - variables, Y_im - variables and Z_i - variables. Finally it frees the SCIP object.
+ * the model, and then releases the SCIP object. It releases all unique-item-assignment constraints and all
+ * capacity-and-linking constraints. It also releases all
+ * X_ij -variables and Y_i -variables Finally it frees the SCIP object.
  * If you get a:
 // "WARNING: Original variable <> not released when freeing SCIP problem <>"
 // this is the place to look and check every constraint and variable (yes, also the constraints, it leads to the same
@@ -178,11 +179,11 @@ CompactModel::CompactModel(Instance* ins)
  */
 CompactModel::~CompactModel()
 {
-   //#####################################################################################################################
-   // release constraints
-   //#####################################################################################################################
-   // Every constraint that we have generated and stored needs to be released. Thus, use the same for-loops as for
-   // generating the constraints to ensure that you release everyone.
+   // #####################################################################################################################
+   //  release constraints
+   // #####################################################################################################################
+   //  Every constraint that we have generated and stored needs to be released. Thus, use the same for-loops as for
+   //  generating the constraints to ensure that you release everyone.
 
    // release all unique assignment constraints
    for( int i = 0; i < _ins->_nbItems; ++i )
@@ -192,20 +193,20 @@ CompactModel::~CompactModel()
 
    // release all capacity and linking constraints
 
-   for( int j = 1; j < _ins->_nbBins; j++ )
+   for( int j = 0; j < _ins->_nbBins; j++ )
    {
 
       SCIPreleaseCons(_scipCM, &_cons_capacity_and_linking[j]);
    }
 
-   //#####################################################################################################################
-   // release all variables
-   //#####################################################################################################################
+   // #####################################################################################################################
+   //  release all variables
+   // #####################################################################################################################
 
    // release all X_ij - variables
 
-  for( int i = 0; i < _ins->_nbItems; ++i ) // sum over all i in I
-   {                       
+   for( int i = 0; i < _ins->_nbItems; ++i ) // sum over all i in I
+   {
       for( int j = 0; j < _ins->_nbBins; ++j ) // sum over all j in J
       {
          SCIPreleaseVar(_scipCM, &_var_X[i][j]);
@@ -215,13 +216,13 @@ CompactModel::~CompactModel()
    // release all Y_j - variables
    for( int j = 0; j < _ins->_nbBins; ++j ) // sum over all bins j in J
    {
-         SCIPreleaseVar(_scipCM, &_var_Y[j]);
+      SCIPreleaseVar(_scipCM, &_var_Y[j]);
    }
 
-   //#####################################################################################################################
-   // release SCIP object
-   //#####################################################################################################################
-   // At the end release the SCIP object itself
+   // #####################################################################################################################
+   //  release SCIP object
+   // #####################################################################################################################
+   //  At the end release the SCIP object itself
    SCIPfree(&_scipCM);
 }
 
