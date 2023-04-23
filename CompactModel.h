@@ -10,7 +10,7 @@
 using namespace scip;
 
 /**
- * @brief The compact model formulation for the VRP as written in Book S. 233
+ * @brief The compact model formulation for the BPP as given in the lecture handout "OR_II_Bin_Packing.pdf"
  *
  * @param _scipCM pointer to the scip environment for the compact model
  *
@@ -22,16 +22,15 @@ using namespace scip;
  *
  * @param _cons pointer to various SCIP-constraints
  *
- * @note  * CompactModel is a class that implements the compact model formulation for the Vehicle Routing Problem (VRP)
- * as written in Book S. 233. It has a constructor that takes an Instance pointer as an argument, and a destructor to
- * free up memory. It also has methods to solve the problem, display the solution, and set SCIP parameters. The class
- * contains private variables that are pointers to SCIP environment, solution, instance, and various SCIP variables and
- * constraints. The variables include X_ijm (which is equal to 1 if in Tour m it would be navigated directly from i to
- * j), Y_im (which is equal to 1 if i is in tour m), and Z_i (which is a real-valued auxiliary variable to avoid short
- * cycles). The constraints include capacity constraints (each tour m cannot exceed the capacity b), leaving constraints
- * (each place i of the tour m must be left exactly once), arriving constraints (each place i of the tour m must be
- * arrived exactly once), one tour per destination constraint (each place i without depot must be in exactly one tour
- * m), short cycle avoidance constraints, and no self-tour constraints (forbid in every tour m to drive from i to i).
+ * @note  * CompactModel is a class that implements the compact model formulation for the Bin Packing Problem (BPP)
+ * as given in the lecture handout "OR_II_Bin_Packing.pdf". It has a constructor that takes an Instance pointer as an
+ * argument, and a destructor to free up memory. It also has methods to solve the problem, display the solution, and set
+ * SCIP parameters. The class contains private variables that are pointers to SCIP environment, solution, instance, and
+ * various SCIP variables and constraints. The variables include X_ij (which is equal to 1 in a feasible solution if
+ * item i \in I is placed in bin j \in J) and Y_j (which is equal to 1 in a feasible solution if bin j \in J is used).
+ * The constraints include unique assignment constraints (every item i \in I is packed in exactly one bin) and capacity
+ * and linking constraints (for every bin the sum of the weights of the packed items is less or equal to the bin
+ * capacity b, also it ensures that variable Y_j = 0 implies X_ij = 0 for every item i and bin j).
  */
 class CompactModel
 {
@@ -59,15 +58,10 @@ private:
    Instance* _ins; // pointer to the instance
 
    // variables
-   vector<vector<vector<SCIP_VAR*>>> _var_X; // X_ijm:  =1, if in Tour m it would be navigated directly from i to j
-   vector<vector<SCIP_VAR*>>         _var_Y; // Y_im:   =1, if i is in tour m
-   vector<SCIP_VAR*>                 _var_Z; // Z_i:    real-valued auxiliary variable to avoid short cycles
+   vector<vector<SCIP_VAR*>> _var_X; // X_ij: =1, if item i is placed in bin j
+   vector<SCIP_VAR*>         _var_Y; // Y_i:  =1, if bin i is used
 
    // constraints
-   vector<SCIP_CONS*>         _cons_capacity; // (m) Each tour m can not exceed the capacity b (11.5)
-   vector<vector<SCIP_CONS*>> _cons_leaving;  // (i, m) Each place i of the tour m must be left exactly once (11.6)
-   vector<vector<SCIP_CONS*>> _cons_arriving; // (i, m) Each place i of the tour m must be arrived exactly once (11.7)
-   vector<SCIP_CONS*> _cons_oneTourPerDest;   // (i) Each place i (without depot) must be in exactly one tour m (11.8)
-   vector<vector<SCIP_CONS*>> _cons_shortCycles; //(i, j) Avoid short cycles
-   vector<vector<SCIP_CONS*>> _cons_noSelfTour;  // (i, m) Forbid in every tour m to drive from i to i
+   vector<SCIP_CONS*> _cons_capacity_and_linking; // linking and capacity constraint for every bin
+   vector<SCIP_CONS*> _cons_unique_assignment;    // every item i is placed in exactly one bin j
 };

@@ -1,18 +1,20 @@
 #include "Instance.h"
 
 /**
- * @brief read data from a .vrp-file
+ * @brief read data from a .bpp-file
  *
- * @param nameFile path to vrp.file
+ * @param nameFile path to bpp.file
  *
- * @note This function reads data from a .vrp-file and stores it in the instance. It takes in a string nameFile which is
- * the path to the vrp.file. The function uses an ifstream to open the file and checks if it is valid. If not, an error
+ * @note This function reads data from a .bpp-file and stores it in the instance. It takes in a string nameFile which is
+ * the path to the bpp.file. The function uses an ifstream to open the file and checks if it is valid. If not, an error
  * message is printed. The function then reads each line of the file and stores it in a string line. A character
  * par_name is set to 0 and ss (an istringstream) reads the first character of the line. A switch statement is used
  * to determine which parameter to store the data in based on the first character of each line. The
- * _nbDestinations-parameter is used to resize the par_c matrix and par_w-vector to fit the number of destinations. The
- * data is then stored in vectors par_w, par_c, and par_b depending on what type of data it is. Every line is loaded
- * into ss and with >> we can get the next character from ss and delete it from ss. Finally, the file stream is closed.
+ * _nbItems-parameter is used to resize the par_w vector to fit the number of items. The _nbBins-parameter is used to
+ * specify the upper bound of available bins. In our case it is equivalent to _nbItems. The data is then stored in
+ * vector par_w (weights of items) and scalar par_b (capacity of a single bin) depending on what type of data it is.
+ * Every line is loaded into ss and with >> we can get the next character from ss and delete it from ss. Finally, the
+ * file stream is closed.
  */
 void Instance::read(string nameFile)
 {
@@ -27,60 +29,44 @@ void Instance::read(string nameFile)
    {
       istringstream ss(line); // ss is a string stream of the line, which makes it possible to get different
                               // strings separated by spaces
-                              
-      char par_name = {0};    // the first character of the line, which indicates the parameter, initialized with 0
+
+      char par_name = {0}; // the first character of the line, which indicates the parameter, initialized with 0
 
       ss >> par_name; // get the first char of the line
 
       switch( par_name ) // Instead of using multiple if-statements, we use a switch statement: if(par_name == '')
       {
-      case 'I': // read number of destinations
+      case 'I': // read number of items and therefore bins
       {
-         ss >> _nbDestinations;
+         int parameter;
+         ss >> parameter;
 
-         // as par_w and par_c depend on the number of destinations, we are resizing them
-         par_w.resize(_nbDestinations, 0);
+         // set _nbItems and _nbBins
+         _nbItems = parameter;
+         _nbBins  = parameter;
 
-         par_c.resize(_nbDestinations);
-         for( int i = 0; i < _nbDestinations; ++i )
-         {
-            par_c[i].resize(_nbDestinations, 0);
-         }
+         // as par_w depends on the number of items, we are resizing them
+         par_w.resize(_nbItems, 0);
+
          break; // jump to the end of the switch-statement
       }
 
-      case 'M': // read number of tours
+      case 'b': // read b : bin capacity parameter
       {
-         ss >> _nbVehicles;
-
-         par_b.resize(_nbVehicles, 0);
+         int val = 0;
+         ss >> val;
+         par_b = val;
          break;
       }
 
-      case 'b': // read b : capacity-parameter
+      case 'w': // read w_i: weight for item i
       {
-         int m, val = 0;
-         ss >> m >> val;
-         par_b[m] = val;
+         int item, weight = 0;
+         ss >> item >> weight;
+         par_w[item] = weight;
          break;
       }
-
-      case 'c': // read c : costs to drive from destination i to destination j
-      {
-         int i, j, val = 0;
-         ss >> i >> j >> val;
-         par_c[i][j] = val;
-         break;
-      }
-
-      case 'w': // read w : capacity use for destination i
-      {
-         int i, val = 0;
-         ss >> i >> val;
-         par_w[i] = val;
-         break;
-      }
-
+      
          // if no of the key-chars is at the beginning, ignore the whole line and do nothing
       }
    }
@@ -90,34 +76,20 @@ void Instance::read(string nameFile)
 /**
  * @brief function to display the instance-data
  *
- * @note This function is used to display the instance-data of a Vehicle Routing Problem. It prints out the number of
- destinations (I) and tours (M), as well as the costs c_ij to drive from i to j, capacity b_m for every tour m, and
- quantity w_i for every destination i.
+ * @note This function is used to display the instance-data of a Bin Packing Problem. It prints out the number of
+ items (I) and bins (J), as well as the weights w_i of item and the capacity b of a single bin.
  */
 void Instance::display()
 {
-   cout << "Instance: \n";
+   cout << "Instance: "<< endl;
 
-   cout << "Number of Destinations I: " << _nbDestinations << "\n";
-   cout << "Number of Tours M: " << _nbVehicles << "\n";
-
-   cout << "Costs c_ij to drive from i to j: \n";
-   for( int i = 0; i < _nbDestinations; ++i )
+   cout << "Number of Items I: " << _nbItems << endl;
+   cout << "Weights of item i: " << endl;
+   for( int i = 0; i < _nbItems; ++i )
    {
-      for( int j = 0; j < _nbDestinations; ++j )
-      {
-         cout << i << " " << j << ": " << par_c[i][j] << "\n";
-      }
+      cout << i << ": " << par_w[i] << endl;
    }
 
-   cout << "capacity b_m:  \n";
-   for( int m = 0; m < _nbVehicles; ++m )
-   {
-      cout << m << ": " << par_b[m] << "\n";
-   }
-   cout << "quantity w_i for every destination i: \n";
-   for( int i = 0; i < _nbDestinations; ++i )
-   {
-      cout << i << ": " << par_w[i] << "\n";
-   }
+   cout << "Capacity of a single bin: " << par_b << endl;
 }
+

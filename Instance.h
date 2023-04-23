@@ -8,26 +8,27 @@
 using namespace std;
 
 /**
- * @brief every external parameter-value and set for the VRP
+ * @brief every external parameter-value and set for the BPP
  *
  * @param _nb Setsizes
  *
  * @param par parameters
  *
- * @note This class defines the parameters for a Vehicle Routing Problem (VRP). It has three sets: _nbDestinations,
- _nbVehicles, and three parameters: par_c, par_w, and par_b. The read() function reads in a file with the parameter
+ * @note This class defines the parameters for a Bin Packing Problem (BPP). It induces two sets:
+ * - set I: containing all item indices, starting with 0 and ending in _nbItems - 1,
+ * - set J: containing all bin indices, starting with 0 and ending in _nbBins
+ and two parameters: par_w and par_b. The read() function reads in a file with the parameter
  values, and the display() function displays the values.
  */
 class Instance
 {
 public:
-   int _nbDestinations; // Setsize of Destinations (i,j \in I)
-   int _nbVehicles;     // Setsize of Vehicles (m \in M)
+   int _nbItems; // Setsize of Items (i \in I)
+   int _nbBins;  // Setsize of Bins (j \in J)
 
    // Parameters
-   vector<vector<double>> par_c; // d_ij - distance between i and j
-   vector<double>         par_w; // w_i - demand at destination i
-   vector<double>         par_b; // b_m - capacity of vehicle m
+   int            par_b; // b - capacity of a single bin
+   vector<double> par_w; // w_i - weight of item i \in I
 
    void read(string nameFile); // function to read data from a file
 

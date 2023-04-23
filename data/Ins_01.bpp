@@ -1,0 +1,14 @@
+p FILE: test.bpp
+p SOURCE: Christopher Glander
+p DESCRIPTION: Testing_Instance for the BPP
+
+I   6 
+
+b   10
+
+w   0   4
+w   1   8
+w   2   1
+w   3   4
+w   4   2
+w   5   1
