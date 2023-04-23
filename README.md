@@ -20,7 +20,7 @@ This is a program, which reads an instance of an bpp and solves the bpp with the
 | $X_{ij} \in\{0, 1\}$ | = 1 if we pack item $i$ into bin $j$, 0 otherwise |
 | $Y_{j}$ | =1 if we use bin $j$, 0 otherwise |
 
-## Compact model VRP
+## Compact model BPP
 
 ```math
 \min \sum_{j \in \mathcal{J}} Y_{ij} \\
