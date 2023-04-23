@@ -62,6 +62,8 @@ private:
    vector<SCIP_VAR*>         _var_Y; // Y_i:  =1, if bin i is used
 
    // constraints
-   vector<SCIP_CONS*> _cons_capacity_and_linking; // linking and capacity constraint for every bin
-   vector<SCIP_CONS*> _cons_unique_assignment;    // every item i is placed in exactly one bin j
+   vector<SCIP_CONS*> _cons_capacity_and_linking; // capacity and linking constraint for every bin: bin capacity is
+                                                  // respected, item i can only be placed in bin j if bin j is used
+   vector<SCIP_CONS*>
+      _cons_unique_assignment; // unique assignment constraint: every item i is placed in exactly one bin j
 };
