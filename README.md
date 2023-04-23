@@ -27,7 +27,7 @@ This is a program, which reads an instance of an bpp and solves the bpp with the
 
 s.t. \\
 
-\sum_{j \in \mathcal{J}} X_{ij}; \forall   i \in \mathcal{I} \\
+\sum_{j \in \mathcal{J}} X_{ij} = 1; \forall   i \in \mathcal{I} \\
 
 \sum_{i \in \mathcal{I}} w_{i} \cdot X_{ij} \leq b\cdot Y_{j}; \forall j \in \mathcal{J} \\
 
