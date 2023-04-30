@@ -316,7 +316,7 @@ SCIP_Real MyPricer::generate_solve_Subproblem_MIP(vector<SCIP_Real>& pattern_pi,
                          var_cons_name,        // name
                          0,                    // lower bound
                          1,                    // upper bound
-                         obj_coeff,            // objective function coefficient
+                         -pattern_pi[i],       // objective function coefficient
                          SCIP_VARTYPE_BINARY); // variable type
 
       SCIPaddVar(_scipSP, _var_X[i]); // add newVar to scip-env
@@ -330,7 +330,7 @@ SCIP_Real MyPricer::generate_solve_Subproblem_MIP(vector<SCIP_Real>& pattern_pi,
                       var_cons_name,            // name
                       1,                        // lower bound
                       1,                        // upper bound
-                      1,                        // objective function coefficient
+                      isFarkas ? 0 : 1,         // objective function coefficient
                       SCIP_VARTYPE_CONTINUOUS); // variable type
 
    SCIPaddVar(_scipSP, _var_cost_const); // add newVar to scip-env
@@ -357,10 +357,10 @@ SCIP_Real MyPricer::generate_solve_Subproblem_MIP(vector<SCIP_Real>& pattern_pi,
 
    for( int i = 0; i < _ins->_nbItems; ++i ) // sum over all items i and add pattern_pi[i]*X_i as a term
    {
-      SCIPaddCoefLinear(_scipSP,        // scip-env
-                        _con_capacity,  // constraint
-                        _var_X[i],      // variable
-                        pattern_pi[i]); // coefficient
+      SCIPaddCoefLinear(_scipSP,         // scip-env
+                        _con_capacity,   // constraint
+                        _var_X[i],       // variable
+                        _ins->par_w[i]); // coefficient
    }
    SCIPaddCons(_scipSP, _con_capacity); // add constraint to the scip-env
 
