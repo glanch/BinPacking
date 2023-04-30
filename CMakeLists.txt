@@ -12,6 +12,8 @@ add_executable(BPP
     main.cpp
     CompactModel.cpp
     Instance.cpp
+    Master.cpp
+    Pricer.cpp
 )
 
 target_link_libraries(BPP ${SCIP_LIBRARIES} stdc++fs)

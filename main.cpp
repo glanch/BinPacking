@@ -1,4 +1,6 @@
 #include "CompactModel.h"
+#include "Master.h"
+#include "Pricer.h"
 
 /**
  * @brief main-function
@@ -32,9 +34,37 @@ int main()
    compMod->solve();
    compMod->displaySolution();
 
-   // after we are finished, we free the memory
+   // after we are finished, we free the memory of compact model
    delete compMod;
-   delete ins;
 
-   return 0;
+   // proceed with CG
+   Master* pbMaster = new Master(ins);
+
+   //==========================================
+   // create and activate pricer_VRP_exact_mip
+
+   MyPricer* pricer_VRP_exact_mip = new MyPricer(
+      pbMaster,
+      "VRP_exact_mip",                                                        // name of the pricer
+      "simple pricer for the VRP with homogenous fleet - exact MIP-solution", // short description of the pricer
+      0,                                                                      //
+      TRUE);                                                                  //
+
+   SCIPincludeObjPricer(pbMaster->_scipRMP, //
+                        pricer_VRP_exact_mip,
+                        true);
+
+   // activate pricer_VRP_exact_mip
+   SCIPactivatePricer(pbMaster->_scipRMP, SCIPfindPricer(pbMaster->_scipRMP, pricer_VRP_exact_mip->_name));
+
+   //==========================================
+   // solve the master problem
+
+   pbMaster->solve();
+   pbMaster->displaySolution();
+
+   // delete all dynamicly created objects
+   delete pbMaster;
+   // we do not need to delete the pricer, cause of delete-object-flag == true at SCIPincludeObjPricer()
+   delete ins;
 }
