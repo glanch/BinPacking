@@ -79,6 +79,6 @@ Furthermore, we denote a subset of patterns by $\mathcal{P'} \subseteq \mathcal{
 \min && 1 - \sum_{i \in \mathcal{I}} \pi_i \cdot x_i  &\\ 
 \text{s.t.}&& \sum_{p \in \mathcal{I}} w_i \cdot x_i\cdot\lambda_p \leq b && \\
 
-&&x_i \in \{0, 1\} \forall i \in \mathcal{I}
+&&x_i \in \{0, 1\} &&\forall i \in \mathcal{I}
 \end{aligned}
 ```
