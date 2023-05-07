@@ -47,12 +47,12 @@
       devShell = pkgs.mkShell {
         buildInputs = with pkgs; [
           scipoptsuite
-          gcc
           gnumake
           pkg-config
           gdb
           cmake
         ];
+
       };
     }
   );
