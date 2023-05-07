@@ -47,6 +47,9 @@ MyPricer::MyPricer(Master* pbMaster, const char* p_name, const char* p_desc, int
  */
 MyPricer::~MyPricer()
 {
+   // destroy dualvalues
+   delete DualValues;
+
    // destroy subproblem
    delete Subproblem_mip;
 }
