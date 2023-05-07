@@ -6,7 +6,6 @@
 
 #include <algorithm> // for the max()/min() function
 
-
 // scip includes
 #include "objscip/objscip.h"
 #include "objscip/objscipdefplugins.h"
@@ -14,6 +13,7 @@
 #include "Instance.h"
 #include "Master.h"
 
+#include "SubProblem.h"
 
 using namespace std;
 using namespace scip;
@@ -56,21 +56,26 @@ public:
 
 private:
    // to add the new column, i.e., the stable set, to the master problem
-   void      addNewVar(vector<SCIP_Bool>& newPattern, double& patternCosts, double& reducedCosts);
+   void      addNewVar(SubProblemMIP::solution* solution);
    SCIP_Real generate_solve_Subproblem_MIP(vector<SCIP_Real>& pattern_pi,
                                            vector<SCIP_Bool>& newPattern,
                                            const bool&        isFarkas,
                                            SCIP_Real&         patternCosts);
 
-   void display_one_variable(vector<SCIP_Bool>& newPattern, double& patternCosts, double& reducedCosts);
+   void display_one_variable(SubProblemMIP::solution* solution);
 
    SCIP* _scipRMP; // pointer to the scip-env of the master-problem
 
+   DualVariables*
+      DualValues; // Pointer to the Values of the dual-variables for the current iteration of the ColumnGeneration
+
+   SubProblemMIP* Subproblem_mip; // pointer to the Subproblem-object
+
    // variables
-   vector<SCIP_VAR*> _var_X;        // X_i: if item i is part of pattern
-   SCIP_VAR*                 _var_cost_const; // dummy-variable to consider a constant term in the Objective-Function
+   vector<SCIP_VAR*> _var_X;          // X_i: if item i is part of pattern
+   SCIP_VAR*         _var_cost_const; // dummy-variable to consider a constant term in the Objective-Function
 
    // constraints
-   SCIP_CONS* _con_capacity;  // (13): bin capacity b is not exceeded by packing item X_i
-   SCIP_CONS* _con_cost_const;  // dummy-constraint to force cost_const var to exactly 1
+   SCIP_CONS* _con_capacity;   // (13): bin capacity b is not exceeded by packing item X_i
+   SCIP_CONS* _con_cost_const; // dummy-constraint to force cost_const var to exactly 1
 };

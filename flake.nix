@@ -50,7 +50,8 @@
           gnumake
           pkg-config
           gdb
-          cmake
+          cmake 
+          clang-tools_15
         ];
 
       };

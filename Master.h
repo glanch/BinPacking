@@ -4,6 +4,7 @@
 #include "Instance.h"
 
 // scip includes
+#include "objscip/objbenders.h"
 #include "objscip/objscip.h"
 #include "objscip/objscipdefplugins.h"
 

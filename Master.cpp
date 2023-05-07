@@ -1,4 +1,5 @@
 #include "Master.h"
+#include <scip/scip_cons.h>
 
 /**
  * @brief Construct a new Master:: Master object
@@ -13,9 +14,8 @@
  * After that, it creates an empty problem using the SCIPcreateProb() function.
  * Next, it sets all optional SCIP parameters by calling the setSCIPParameters() function.
  * Following this, the function creates the name dummy variable (var_cons_name), resizes a vector (_var_lambda) for use
- * later, and creates two sets of linear constraints (_cons_onePlanPerDest and _cons_onePlanPerVehicle).
- * The _cons_onePlanPerDest constraints ensure that each destination is visited by exactly one vehicle, and the
- * _cons_onePlanPerVehicle constraints ensure that each vehicle is assigned to exactly one plan.
+ * later, and creates one set of linear constraints: _cons_onePatternPerItem
+ * The _cons_onePatternPerItem constraints ensure that each item is packed is packed exactly once.
  * Finally, the function writes the original LP program to a file using the SCIPwriteOrigProblem() function
  */
 Master::Master(Instance* ins)
@@ -86,23 +86,28 @@ Master::Master(Instance* ins)
 /**
  * @brief Destroy the Master:: Master object
  *
- * @note This code is a destructor for a class called "Master". It is responsible for releasing all variables and the
+ * @note This code is a destructor for a class called "Master". It is responsible for releasing all constraints, variables and the
  * SCIP (Solving Constraint Integer Programming) environment associated with the class.
- * Specifically, the code uses a for loop to iterate over all vehicles in the instance (referred to by the variable
- * "_ins")
- * and their corresponding lambda variables (stored in the vector "_var_lambda"). For each lambda variable,
- * SCIPreleaseVar is called to release its memory from the SCIP environment.
+ * Specifically, the code uses a for loop to iterate over all items in the instance (referred to by the variable
+ * "_ins") and their corresponding constraints. For each item, the corresponding onePatternPerItem constraint is freed by calling SCIPreleaseCons.
+ * For each generated pattern, the corresponding lambda variables (stored in the vector "_var_lambda"),
+ * SCIPreleaseVar is called to release it's memory from the SCIP environment.
  * Finally, SCIPfree is called on the SCIP environment itself, which frees any memory associated with the environment.
  */
 Master::~Master()
 {
-   // TODO: what about constraints?
+   // release constraints
+   for(int i = 0; i < _ins->_nbItems; i++) {
+      SCIPreleaseCons(_scipRMP, &_cons_onePatternPerItem[i]);
+   }
+
+   // release variables
    for( int p = 0; p < _var_lambda.size(); p++)
    {
       SCIPreleaseVar(_scipRMP, &_var_lambda[p]);
    }
 
-   SCIPfree(&_scipRMP);
+   // SCIPfree(&_scipRMP);
 }
 
 // solve the problem
