@@ -14,18 +14,18 @@
  */
 int main()
 {
-   //#####################################################################################################################
-   // Settings
+   // #####################################################################################################################
+   //  Settings
    string InstanceName = "../data/Ins_01.bpp";
 
-   //#####################################################################################################################
-   // read and display the instance
+   // #####################################################################################################################
+   //  read and display the instance
    Instance* ins = new Instance();
    ins->read(InstanceName);
    ins->display();
 
-   //#####################################################################################################################
-   // create compact problem
+   // #####################################################################################################################
+   //  create compact problem
 
    // Use the Constructor to create the instance "compMod" of the class CompactModel
    CompactModel* compMod = new CompactModel(ins);
@@ -41,21 +41,20 @@ int main()
    Master* pbMaster = new Master(ins);
 
    //==========================================
-   // create and activate pricer_VRP_exact_mip
+   // create and activate pricer_BPP_exact_mip
 
-   MyPricer* pricer_VRP_exact_mip = new MyPricer(
-      pbMaster,
-      "VRP_exact_mip",                                                        // name of the pricer
-      "simple pricer for the VRP with homogenous fleet - exact MIP-solution", // short description of the pricer
-      0,                                                                      //
-      TRUE);                                                                  //
+   MyPricer* pricer_BPP_exact_mip = new MyPricer(pbMaster,
+                                                 "BPP_exact_mip",             // name of the pricer
+                                                 "Simple Bin Packing Pricer", // short description of the pricer
+                                                 0,                           // priority
+                                                 TRUE);                       // delay
 
    SCIPincludeObjPricer(pbMaster->_scipRMP, //
-                        pricer_VRP_exact_mip,
+                        pricer_BPP_exact_mip,
                         true);
 
-   // activate pricer_VRP_exact_mip
-   SCIPactivatePricer(pbMaster->_scipRMP, SCIPfindPricer(pbMaster->_scipRMP, pricer_VRP_exact_mip->_name));
+   // activate pricer_BPP_exact_mip
+   SCIPactivatePricer(pbMaster->_scipRMP, SCIPfindPricer(pbMaster->_scipRMP, pricer_BPP_exact_mip->_name));
 
    //==========================================
    // solve the master problem

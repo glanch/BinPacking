@@ -57,10 +57,6 @@ public:
 private:
    // to add the new column, i.e., the stable set, to the master problem
    void      addNewVar(SubProblemMIP::solution* solution);
-   SCIP_Real generate_solve_Subproblem_MIP(vector<SCIP_Real>& pattern_pi,
-                                           vector<SCIP_Bool>& newPattern,
-                                           const bool&        isFarkas,
-                                           SCIP_Real&         patternCosts);
 
    void display_one_variable(SubProblemMIP::solution* solution);
 

@@ -92,13 +92,6 @@ SCIP_RETCODE MyPricer::scip_init(SCIP* scip, SCIP_PRICER* pricer)
  *
  * @param isFarkas perform farkas whether the master problem is LP-infeasible
  *
- * @note a function named "pricing" inside the class "MyPricer". The function takes a boolean value called "isFarkas" as
- * its input parameter. The function initializes and defines two vectors called "destination_pi" and "convex_pi" with
- * the length of "_ins->_nbDestinations" and "_ins->_nbVehicles", respectively. Then it applies a loop to define the
- * dual variables for each constraint. The loop uses SCIPgetDualfarkasLinear function if "isFarkas" is true, and
- * SCIPgetDualsolLinear if "isFarkas" is false. Next, it applies another loop to calculate the reduced costs and the
- * objective function coefficient for each newly generated variable, and add new variables to the model if their reduced
- * cost is negative. Lastly, it returns SCIP_SUCCESS.
  * @return SCIP_RESULT
  */
 SCIP_RESULT MyPricer::pricing(const bool isFarkas)
@@ -206,7 +199,8 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
 
    char var_name[255];
 
-   int lambdaIndex = _pbMaster->_var_lambda.size(); // actual number of lambdas for each vehicle
+   int lambdaIndex =
+      _pbMaster->_var_lambda.size(); // actual number of lambda variables corresponds to the next free zero-based index
 
    ( void )SCIPsnprintf(var_name, 255, "lambda_%d", lambdaIndex); // create name
 
@@ -247,196 +241,21 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
    SCIPwriteTransProblem(_scipRMP, model_name, "lp", FALSE);
 };
 
-/**
- * @brief generate the SCIP subproblem with the method of the compact Model
- *
- * @param destination_pi dual-variables for the onePlanPerDest-constraints
- * @param convex_pi_m dual-variables for the onePlanPerVehicle-constraints
- * @param newPlan a vector of booleans representing the calculated tour
- * @param sub_m the index of the vehicle
- * @param isFarkas a boolean flag indicating if the variables are dual or farkas
- * @param planCosts the costs for the calculated tour
- * @return the reduced costs, or 0 if infeasible
- *
- * @note generates and solves a subproblem using SCIP for the Vehicle Routing Problem (VRP). The subproblem is built
- * from scratch and solved with a standard solver, using dual/farkas variables and a flag to build a different objective
- * function.
- * The inputs to the function are a vector of dual/farkas variables, a value for convex_pi_m, a reference to a vector of
- * booleans for the new plan, an integer for the subproblem, and a boolean flag indicating if the variables are dual or
- * farkas.
- * The outputs of the function are the optimal reduce costs, the corresponding plan (via the newPlan argument), and the
- * costs of this new plan (via the planCosts argument).
- * The function creates a new SCIP instance, includes default plugins, sets optional parameters, creates and adds
- * variables, creates and adds constraints, solves the subproblem, and releases constraints and variables after the
- * solving process.
- */
-SCIP_Real MyPricer::generate_solve_Subproblem_MIP(vector<SCIP_Real>& pattern_pi,
-                                                  vector<SCIP_Bool>& newPattern,
-                                                  const bool&        isFarkas,
-                                                  SCIP_Real&         patternCosts)
-{
-   SCIP_Real val = 0;
-
-   // first generate the Subproblem with the method of the compact Model
-   SCIP* _scipSP;
-
-   SCIPcreate(&_scipSP);
-   SCIPincludeDefaultPlugins(_scipSP);
-   SCIPcreateProbBasic(_scipSP, "Subproblem BPP");
-
-   // set all optional SCIPParameters
-   SCIPsetIntParam(_scipSP, "display/verblevel", 0);
-   SCIPsetBoolParam(_scipSP, "display/lpinfo", FALSE);
-
-   // create Helping-dummy for the name of variables and constraints
-   char var_cons_name[255];
-
-   // ############################################################################################################
-   //  create and add all Variables
-   // ############################################################################################################
-
-   // add the binary variable X_i for all items i
-
-   // set dimension for variable vector, with empty pointers
-   _var_X.resize(_ins->_nbItems);
-
-   for( int i = 0; i < _ins->_nbItems; ++i )
-   {
-      // only if isFarkas == false, consider the costs of the Plan, which are equal to 1
-      SCIP_Real obj_coeff = !isFarkas ? 1 : 0;
-
-      SCIPsnprintf(var_cons_name, 255, "X_%d", i); // set name for debugging
-
-      SCIPcreateVarBasic(_scipSP,
-                         &_var_X[i],           // returns the address of the newly created variable
-                         var_cons_name,        // name
-                         0,                    // lower bound
-                         1,                    // upper bound
-                         -pattern_pi[i],       // objective function coefficient
-                         SCIP_VARTYPE_BINARY); // variable type
-
-      SCIPaddVar(_scipSP, _var_X[i]); // add newVar to scip-env
-   }
-
-   // add dummy-variable to consider the constant term of 1 in the objective Function
-   SCIPsnprintf(var_cons_name, 255, "cost_const");
-
-   SCIPcreateVarBasic(_scipSP,
-                      &_var_cost_const,         // returns the address of the newly created variable
-                      var_cons_name,            // name
-                      1,                        // lower bound
-                      1,                        // upper bound
-                      isFarkas ? 0 : 1,         // objective function coefficient
-                      SCIP_VARTYPE_CONTINUOUS); // variable type
-
-   SCIPaddVar(_scipSP, _var_cost_const); // add newVar to scip-env
-
-   // #########################################################################################
-   // Add restrictions
-   // ##########################################################################################
-   // restriction (13) in lecture handout
-   // sum(i, w_i * X_i) <= b
-   // is equal to -infty <= sum(i, w_i * X_i) <= b
-
-   _con_capacity = nullptr;
-
-   SCIPsnprintf(var_cons_name, 255, "capacity"); // set constraint name for debugging
-
-   SCIPcreateConsBasicLinear(_scipSP,                // scip
-                             &_con_capacity,         // cons
-                             "con_capacity",         // name
-                             0,                      // nvar
-                             0,                      // vars
-                             0,                      // coeffs
-                             -SCIPinfinity(_scipSP), // lhs
-                             _ins->par_b);           // rhs
-
-   for( int i = 0; i < _ins->_nbItems; ++i ) // sum over all items i and add pattern_pi[i]*X_i as a term
-   {
-      SCIPaddCoefLinear(_scipSP,         // scip-env
-                        _con_capacity,   // constraint
-                        _var_X[i],       // variable
-                        _ins->par_w[i]); // coefficient
-   }
-   SCIPaddCons(_scipSP, _con_capacity); // add constraint to the scip-env
-
-   // dummy constraint
-   // cost_const == 1
-   // is equal to 1 <= Cost_const <= 1
-
-   SCIPcreateConsBasicLinear(_scipSP,          // scip
-                             &_con_cost_const, // cons
-                             "con_cost_const", // name
-                             0,                // nvar
-                             0,                // vars
-                             0,                // coeffs
-                             1,                // lhs
-                             1);               // rhs
-
-   // #################################################################################
-   // solve the subproblem
-   // #################################################################################
-   SCIPwriteOrigProblem(_scipSP, "subProblem.lp", "lp", FALSE);
-
-   SCIPsolve(_scipSP);
-
-   SCIP_SOL* sol = SCIPgetBestSol(_scipSP);
-   val           = SCIPgetSolOrigObj(_scipSP, sol);
-   patternCosts  = 1; // pattern costs are equal to one because each pattern costs exactly one bin
-
-   // store the plan
-   for( int i = 0; i < _ins->_nbItems; ++i )
-   {
-      newPattern[i] = SCIPgetSolVal(_scipSP, sol, _var_X[i]) > 0.5;
-   }
-
-   // #####################################################################################################################
-   //  release constraints
-   // #####################################################################################################################
-   //  Every constraint that we have generated and stored needs to be released. Thus, use the same for-loops as for
-   //  generating the constraints to ensure that you release everyone.
-
-   SCIPreleaseCons(_scipSP, &_con_capacity);
-   SCIPreleaseCons(_scipSP, &_con_cost_const);
-
-   // #####################################################################################################################
-   //  release all variables
-   // #####################################################################################################################
-   //  Releasing variables is done in the same way as releasing constraints. Use the same for-loops as for generating
-   //  the variables and ensure you get everyone.
-
-   // release all X_i - variables
-   for( int i = 0; i < _ins->_nbItems; ++i )
-   {
-      SCIPreleaseVar(_scipSP, &_var_X[i]);
-   }
-
-   // release dummy variable
-   SCIPreleaseVar(_scipSP, &_var_cost_const);
-
-   // #####################################################################################################################
-   //  release SCIP object
-   // #####################################################################################################################
-   //  At the end release the SCIP object itself
-   SCIPfree(&_scipSP);
-
-   return val;
-}
-
 /** @brief
- * @param newTour
+ * @param solution The solution that should be printed
  * @param planCosts
  * @param reducedCosts
  * @param sub_m
- * @note print the results of a calculation to the console. It takes the input variables and prints them to the console,
- * along with some additional text. The function starts by printing the vehicle number and the reduced and plan costs
- * for that vehicle. It then iterates through the newTour boolean vector and prints the indices where the value is true.
+ * @note print the results of a calculation to the console. It takes the solution of SubProblem::solve() and prints it
+ * to the console, along with some additional text. The function prints the reduced
+ * and newly generated pattern costs. It then iterates through the BinPattern boolean vector and prints the indices where the
+ * value is true, thus displaying whether an item is part of the new pattern.
  */
 void MyPricer::display_one_variable(SubProblemMIP::solution* solution)
 {
-   cout << "Variable with reduced costs: " << solution->reducedCosts << " and PlanCosts: " << solution->BinPatternCost
+   cout << "Variable / new pattern with reduced costs: " << solution->reducedCosts << " and PlanCosts: " << solution->BinPatternCost
         << endl
-        << "with destinations: ";
+        << "with items: ";
    for( int i = 0; i < solution->BinPattern.size(); ++i )
    {
       if( solution->BinPattern[i] == true )

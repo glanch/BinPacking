@@ -80,7 +80,7 @@ Master::Master(Instance* ins)
    }
 
    // generate a file to show the LP-Program that is build. "FALSE" = we get our specific choosen names.
-   SCIPwriteOrigProblem(_scipRMP, "original_RMP_vrp.lp", "lp", FALSE);
+   SCIPwriteOrigProblem(_scipRMP, "original_RMP_bpp.lp", "lp", FALSE);
 }
 
 /**
@@ -107,7 +107,7 @@ Master::~Master()
       SCIPreleaseVar(_scipRMP, &_var_lambda[p]);
    }
 
-   // SCIPfree(&_scipRMP);
+   SCIPfree(&_scipRMP);
 }
 
 // solve the problem
