@@ -86,23 +86,17 @@ Master::Master(Instance* ins)
 /**
  * @brief Destroy the Master:: Master object
  *
- * @note This code is a destructor for a class called "Master". It is responsible for releasing all constraints, variables and the
- * SCIP (Solving Constraint Integer Programming) environment associated with the class.
- * Specifically, the code uses a for loop to iterate over all items in the instance (referred to by the variable
- * "_ins") and their corresponding constraints. For each item, the corresponding onePatternPerItem constraint is freed by calling SCIPreleaseCons.
- * For each generated pattern, the corresponding lambda variables (stored in the vector "_var_lambda"),
- * SCIPreleaseVar is called to release it's memory from the SCIP environment.
- * Finally, SCIPfree is called on the SCIP environment itself, which frees any memory associated with the environment.
+ * @note This code is a destructor for a class called "Master". It is responsible for releasing all constraints,
+ * variables and the SCIP (Solving Constraint Integer Programming) environment associated with the class. For each
+ * generated pattern, the corresponding lambda variables (stored in the vector "_var_lambda"), SCIPreleaseVar is called
+ * to release it's memory from the SCIP environment. Finally, SCIPfree is called on the SCIP environment itself, which
+ * frees any memory associated with the environment. Note that constraints are not freed.
  */
 Master::~Master()
 {
-   // release constraints
-   for(int i = 0; i < _ins->_nbItems; i++) {
-      SCIPreleaseCons(_scipRMP, &_cons_onePatternPerItem[i]);
-   }
 
    // release variables
-   for( int p = 0; p < _var_lambda.size(); p++)
+   for( int p = 0; p < _var_lambda.size(); p++ )
    {
       SCIPreleaseVar(_scipRMP, &_var_lambda[p]);
    }

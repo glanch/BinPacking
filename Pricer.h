@@ -56,7 +56,7 @@ public:
 
 private:
    // to add the new column, i.e., the stable set, to the master problem
-   void      addNewVar(SubProblemMIP::solution* solution);
+   void addNewVar(SubProblemMIP::solution* solution);
 
    void display_one_variable(SubProblemMIP::solution* solution);
 

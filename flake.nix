@@ -13,33 +13,34 @@
         inherit system;
       };
       scipoptsuite = (with pkgs; stdenv.mkDerivation {
-          pname = "scip";
-          version = "8.0.3";
-          src = fetchTarball {
-            url = "https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz";
-            sha256 = "1yf8nzixl8bhpvg656lg9183sv25y0xgqi3v50101qg1iwh3mh2i";
-          };
-          nativeBuildInputs = [
-            clang
-            cmake
-            zlib
-            readline
-            gmp
-            pkgconfig
-            boost
-            tbb_2021_8
-            ipopt
-          ];
-          buildPhase = "make -j 4";
-          installPhase = ''
-            make install 
-          '';
-        }
-      
+        pname = "scip";
+        version = "8.0.3";
+        src = fetchTarball {
+          url = "https://scipopt.org/download/release/scipoptsuite-8.0.3.tgz";
+          sha256 = "1yf8nzixl8bhpvg656lg9183sv25y0xgqi3v50101qg1iwh3mh2i";
+        };
+        nativeBuildInputs = [
+          clang
+          cmake
+          zlib
+          readline
+          gmp
+          pkgconfig
+          boost
+          tbb_2021_8
+          ipopt
+        ];
+        buildPhase = "make -j 4";
+        installPhase = ''
+          make install 
+        '';
+      }
+
       );
 
-      
-    in rec {
+
+    in
+    rec {
       defaultApp = flake-utils.lib.mkApp {
         drv = defaultPackage;
       };
@@ -50,8 +51,9 @@
           gnumake
           pkg-config
           gdb
-          cmake 
+          cmake
           clang-tools_15
+          valgrind
         ];
 
       };

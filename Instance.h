@@ -29,7 +29,7 @@ public:
    // Parameters
    double         par_b; // b - capacity of a single bin
    vector<double> par_w; // w_i - weight of item i \in I
-                        // dimension: _nbItems
+                         // dimension: _nbItems
 
    void read(string nameFile); // function to read data from a file
 

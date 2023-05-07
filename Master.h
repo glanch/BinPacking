@@ -33,7 +33,7 @@ public:
    vector<SCIP_VAR*> _var_lambda; // lambda_p: a vector of all decision-variables lambda
 
    // constraints
-   vector<SCIP_CONS*> _cons_onePatternPerItem;    // (i) Each item i must be in exactly one pattern p
+   vector<SCIP_CONS*> _cons_onePatternPerItem; // (i) Each item i must be in exactly one pattern p
 
    // solve the problem void solve();
    void solve();

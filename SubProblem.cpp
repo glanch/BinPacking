@@ -18,11 +18,11 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
    // create Helping-dummy for the name of variables and constraints
    char var_cons_name[255];
 
-   //############################################################################################################
-   // create and add all Variables
+   // ############################################################################################################
+   //  create and add all Variables
    //
-   // But all Objective-Function-values are 0!!!!!
-   //############################################################################################################
+   //  But all Objective-Function-values are 0!!!!!
+   // ############################################################################################################
 
    // add the binary variable X_i: item i is packed into knapsack for all items
    // set dimension for vector of variables: amount of items
@@ -43,7 +43,7 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
       SCIPaddVar(_scipSP, _var_X[i]); // add newVar to scip-env
    }
 
-   //##################################################################################
+   // ##################################################################################
 
    SCIPsnprintf(var_cons_name, 255, "cost_const");
 
@@ -58,7 +58,7 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
    SCIPaddVar(_scipSP, _var_cost_const); // add newVar to scip-env
    // #########################################################################################
    // Add restrictions
-   //##########################################################################################
+   // ##########################################################################################
    // restriction (13) in lecture handout
    // sum(i, w_i * X_i) <= b
    // is equal to -infty <= sum(i, w_i * X_i) <= b
@@ -85,10 +85,10 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
    }
    SCIPaddCons(_scipSP, _con_capacity); // add constraint to the scip-env
 
-   //##########################################################################################
-   // dummy constraint
-   // cost_const == 1
-   // is equal to 1 <= Cost_const <= 1
+   // ##########################################################################################
+   //  dummy constraint
+   //  cost_const == 1
+   //  is equal to 1 <= Cost_const <= 1
 
    SCIPcreateConsBasicLinear(_scipSP,          // scip
                              &_con_cost_const, // cons
@@ -107,9 +107,9 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
 // destructor
 SubProblemMIP::~SubProblemMIP()
 {
-   //#####################################################################################################################
-   // release constraints
-   //#####################################################################################################################
+   // #####################################################################################################################
+   //  release constraints
+   // #####################################################################################################################
 
    // dummy constraint
    SCIPreleaseCons(_scipSP, &_con_cost_const);
@@ -117,11 +117,11 @@ SubProblemMIP::~SubProblemMIP()
    // capacity constraint
    SCIPreleaseCons(_scipSP, &_con_capacity);
 
-   //#####################################################################################################################
-   // release all variables
-   //#####################################################################################################################
-   // Releasing variables is done in the same way as releasing constraints. Use the same for-loops as for generating the
-   // variables and ensure you get everyone.
+   // #####################################################################################################################
+   //  release all variables
+   // #####################################################################################################################
+   //  Releasing variables is done in the same way as releasing constraints. Use the same for-loops as for generating
+   //  the variables and ensure you get everyone.
 
    // release all X_i
    for( int i = 0; i < _ins->_nbItems; ++i )
@@ -132,30 +132,28 @@ SubProblemMIP::~SubProblemMIP()
    // release cost_const
    SCIPreleaseVar(_scipSP, &_var_cost_const);
 
-   //#####################################################################################################################
-   // release SCIP object
-   //#####################################################################################################################
-   // At the end release the SCIP object itself
+   // #####################################################################################################################
+   //  release SCIP object
+   // #####################################################################################################################
+   //  At the end release the SCIP object itself
    SCIPfree(&_scipSP);
 }
 
 // update the objective-function of the Subproblem according to the new DualVariables with SCIPchgVarObj()
 void SubProblemMIP::updateObjFunc(DualVariables* duals, const bool isFarkas)
 {
+   SCIPfreeTransform(_scipSP); // enable modifications
+
+   // X_i variables
+   for( int i = 0; i < _ins->_nbItems; ++i )
    {
-      SCIPfreeTransform(_scipSP); // enable modifications
-
-      // X_i variables
-      for( int i = 0; i < _ins->_nbItems; ++i )
-      { 
-         // objective value equals negative value of corresponding dual variable
-         SCIPchgVarObj(_scipSP, _var_X[i], -duals->onePatternPerItem_pi[i]);
-      }
-
-      // dummy variable cost const
-      // objective value: 0 if farkas, 1 otherwise
-      SCIPchgVarObj(_scipSP, _var_cost_const,  isFarkas ? 0 : 1);
+      // objective value equals negative value of corresponding dual variable
+      SCIPchgVarObj(_scipSP, _var_X[i], -duals->onePatternPerItem_pi[i]);
    }
+
+   // dummy variable cost const
+   // objective value: 0 if farkas, 1 otherwise
+   SCIPchgVarObj(_scipSP, _var_cost_const, isFarkas ? 0 : 1);
 }
 
 SubProblemMIP::solution SubProblemMIP::solve()
@@ -177,16 +175,15 @@ SubProblemMIP::solution SubProblemMIP::solve()
       return sol;
    }
 
-   sol.reducedCosts = SCIPgetSolOrigObj(_scipSP, scip_sol);
-   sol.BinPatternCost    = 1; // the cost is equal to 1 since a new bin costs exactly 1 cost unit
-
+   sol.reducedCosts   = SCIPgetSolOrigObj(_scipSP, scip_sol);
+   sol.BinPatternCost = 1; // the cost is equal to 1 since a new bin costs exactly 1 cost unit
 
    sol.BinPattern.resize(_ins->_nbItems, false);
    // store the pattern
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
       // Item is part of pattern if corresponding variable in Pricing Sub Problem is bigger than 0.5
-       sol.BinPattern[i] = SCIPgetSolVal(_scipSP, scip_sol, _var_X[i]) > 0.5; 
+      sol.BinPattern[i] = SCIPgetSolVal(_scipSP, scip_sol, _var_X[i]) > 0.5;
    }
 
    return sol;

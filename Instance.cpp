@@ -61,13 +61,13 @@ void Instance::read(string nameFile)
 
       case 'w': // read w_i: weight for item i
       {
-         int item;
+         int    item;
          double weight;
          ss >> item >> weight;
          par_w[item] = weight;
          break;
       }
-      
+
          // if no of the key-chars is at the beginning, ignore the whole line and do nothing
       }
    }
@@ -82,7 +82,7 @@ void Instance::read(string nameFile)
  */
 void Instance::display()
 {
-   cout << "Instance: "<< endl;
+   cout << "Instance: " << endl;
 
    cout << "Number of Bins J: " << _nbBins << endl;
    cout << "Number of Items I: " << _nbItems << endl;
@@ -94,4 +94,3 @@ void Instance::display()
 
    cout << "Capacity of a single bin: " << par_b << endl;
 }
-

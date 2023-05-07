@@ -251,13 +251,13 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
  * @param sub_m
  * @note print the results of a calculation to the console. It takes the solution of SubProblem::solve() and prints it
  * to the console, along with some additional text. The function prints the reduced
- * and newly generated pattern costs. It then iterates through the BinPattern boolean vector and prints the indices where the
- * value is true, thus displaying whether an item is part of the new pattern.
+ * and newly generated pattern costs. It then iterates through the BinPattern boolean vector and prints the indices
+ * where the value is true, thus displaying whether an item is part of the new pattern.
  */
 void MyPricer::display_one_variable(SubProblemMIP::solution* solution)
 {
-   cout << "Variable / new pattern with reduced costs: " << solution->reducedCosts << " and PlanCosts: " << solution->BinPatternCost
-        << endl
+   cout << "Variable / new pattern with reduced costs: " << solution->reducedCosts
+        << " and PlanCosts: " << solution->BinPatternCost << endl
         << "with items: ";
    for( int i = 0; i < solution->BinPattern.size(); ++i )
    {
