@@ -229,7 +229,7 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
    //  add coefficients to the constraints
 
    // onePatternPerItem constraint
-   for( int i = 0; i < _ins->_nbItems; ++i ) // without 0
+   for( int i = 0; i < _ins->_nbItems; ++i )
    {
       SCIP_Real coeff = solution->BinPattern[i];
       SCIPaddCoefLinear(_scipRMP, _pbMaster->_cons_onePatternPerItem[i], newVar, coeff);
@@ -246,13 +246,10 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
 
 /** @brief
  * @param solution The solution that should be printed
- * @param planCosts
- * @param reducedCosts
- * @param sub_m
  * @note print the results of a calculation to the console. It takes the solution of SubProblem::solve() and prints it
  * to the console, along with some additional text. The function prints the reduced
- * and newly generated pattern costs. It then iterates through the BinPattern boolean vector and prints the indices
- * where the value is true, thus displaying whether an item is part of the new pattern.
+ * and newly generated packing pattern costs. It then iterates through the BinPattern boolean vector and prints the
+ * indices where the value is true, thus displaying whether an item is part of the new pattern.
  */
 void MyPricer::display_one_variable(SubProblemMIP::solution* solution)
 {

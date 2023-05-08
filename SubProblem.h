@@ -38,5 +38,4 @@ public:
 
    // constraints
    SCIP_CONS* _con_capacity;   // The capacity of the bin / knapsack is not exceeded
-   SCIP_CONS* _con_cost_const; // dummy constraint to force cost_const variable to a certain value
 };

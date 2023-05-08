@@ -50,8 +50,8 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
    SCIPcreateVarBasic(_scipSP,
                       &(this->_var_cost_const), // returns the address of the newly created variable
                       var_cons_name,            // name
-                      1,                        // lower bound
-                      1,                        // upper bound
+                      1,                        // lower bound = 1
+                      1,                        // upper bound = 1, overall cost_const = 1
                       0,                        // objective function coefficient, currently 0, will be updated later
                       SCIP_VARTYPE_CONTINUOUS); // variable type
 
@@ -84,24 +84,6 @@ SubProblemMIP::SubProblemMIP(Instance* ins) : _ins(ins)
                         _ins->par_w[i]); // coefficient
    }
    SCIPaddCons(_scipSP, _con_capacity); // add constraint to the scip-env
-
-   // ##########################################################################################
-   //  dummy constraint
-   //  cost_const == 1
-   //  is equal to 1 <= Cost_const <= 1
-
-   SCIPcreateConsBasicLinear(_scipSP,          // scip
-                             &_con_cost_const, // cons
-                             "con_cost_const", // name
-                             0,                // nvar
-                             0,                // vars
-                             0,                // coeffs
-                             1,                // lhs
-                             1);               // rhs
-   SCIPaddCoefLinear(_scipSP,                  // scip-env
-                     _con_cost_const,          // constraint
-                     _var_cost_const,          // variable
-                     1);                       // coefficient = 1
 }
 
 // destructor
@@ -110,9 +92,6 @@ SubProblemMIP::~SubProblemMIP()
    // #####################################################################################################################
    //  release constraints
    // #####################################################################################################################
-
-   // dummy constraint
-   SCIPreleaseCons(_scipSP, &_con_cost_const);
 
    // capacity constraint
    SCIPreleaseCons(_scipSP, &_con_capacity);
