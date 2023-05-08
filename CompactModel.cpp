@@ -95,7 +95,7 @@ CompactModel::CompactModel(Instance* ins)
 
    // sum(j in J, X_ij) = 1 for all i in I
    // is equal to:
-   // 1 <= sum(i in I, X_ij) <= 1 for all i in I
+   // 1 <= sum(j in J, X_ij) <= 1 for all i in I
 
    // set all dimension for constraint with empty pointer
 
@@ -127,7 +127,7 @@ CompactModel::CompactModel(Instance* ins)
 
    // sum(i in I, w_i * X_ij) <= b * Y_j for all bins j in J
    // is equal to:
-   // -infty <= sum(i, w_i * X_ij) - b * Y_j <= 0 for all items i in I, bins j in J
+   // -infty <= sum(i in I, w_i * X_ij) - b * Y_j <= 0 for all bins j in J
 
    // set all dimensions
    _cons_capacity_and_linking.resize(_ins->_nbBins,
