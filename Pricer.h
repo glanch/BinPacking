@@ -15,6 +15,8 @@
 
 #include "SubProblem.h"
 
+#include "Pattern.h"
+
 using namespace std;
 using namespace scip;
 
@@ -53,19 +55,19 @@ public:
 
    // perform pricing for dual and farkas combined with flag isFarkas
    SCIP_RESULT pricing(const bool isFarkas);
+   SubProblemMIP* Subproblem_mip; // pointer to the Subproblem-object
 
 private:
    // to add the new column, i.e., the stable set, to the master problem
-   void addNewVar(SubProblemMIP::solution* solution);
+   void addNewVar(Pattern* solution);
 
-   void display_one_variable(SubProblemMIP::solution* solution);
+   void display_one_variable(Pattern* solution);
 
    SCIP* _scipRMP; // pointer to the scip-env of the master-problem
 
    DualVariables*
       DualValues; // Pointer to the Values of the dual-variables for the current iteration of the ColumnGeneration
 
-   SubProblemMIP* Subproblem_mip; // pointer to the Subproblem-object
 
    // variables
    vector<SCIP_VAR*> _var_X;          // X_i: if item i is part of pattern

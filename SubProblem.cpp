@@ -96,6 +96,13 @@ SubProblemMIP::~SubProblemMIP()
    // capacity constraint
    SCIPreleaseCons(_scipSP, &_con_capacity);
 
+
+   // branching constraints
+   // release all BranchingConstraints
+   for( auto constraint_ptr : _cons_branching)
+   {
+      SCIPreleaseCons(_scipSP, &constraint_ptr);
+   }
    // #####################################################################################################################
    //  release all variables
    // #####################################################################################################################
@@ -135,12 +142,12 @@ void SubProblemMIP::updateObjFunc(DualVariables* duals, const bool isFarkas)
    SCIPchgVarObj(_scipSP, _var_cost_const, isFarkas ? 0 : 1);
 }
 
-SubProblemMIP::solution SubProblemMIP::solve()
+Pattern* SubProblemMIP::solve()
 {
    // #################################################################################
    // solve the subproblem
    // #################################################################################
-   solution sol;
+   Pattern* sol = new Pattern();
 
    SCIPwriteOrigProblem(_scipSP, "subProblem.lp", "lp", FALSE);
 
@@ -150,20 +157,86 @@ SubProblemMIP::solution SubProblemMIP::solve()
 
    if( scip_sol == NULL )
    {
-      sol.reducedCosts = 0;
+      sol->reducedCosts = 0;
       return sol;
    }
 
-   sol.reducedCosts   = SCIPgetSolOrigObj(_scipSP, scip_sol);
-   sol.BinPatternCost = 1; // the cost is equal to 1 since a new bin costs exactly 1 cost unit
+   sol->reducedCosts   = SCIPgetSolOrigObj(_scipSP, scip_sol);
+   sol->PatternCosts = 1; // the cost is equal to 1 since a new bin costs exactly 1 cost unit
 
-   sol.BinPattern.resize(_ins->_nbItems, false);
+   sol->PatternIncidence.resize(_ins->_nbItems, false);
    // store the pattern
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
       // Item is part of pattern if corresponding variable in Pricing Sub Problem is bigger than 0.5
-      sol.BinPattern[i] = SCIPgetSolVal(_scipSP, scip_sol, _var_X[i]) > 0.5;
+      sol->PatternIncidence[i] = SCIPgetSolVal(_scipSP, scip_sol, _var_X[i]) > 0.5;
+      sol->includedItems.push_back(i);
    }
 
    return sol;
 }
+
+
+void SubProblemMIP::addBranching(SCIP_ConsData* consData)
+{
+   SCIPfreeTransform(_scipSP); // enable modifications
+   int item1 = consData->item1;
+   int item2 = consData->item2;
+   SCIP_CONS* cons;
+   char       consName[255];
+
+   SCIP_Real cons_lhs = -SCIPinfinity(_scipSP);
+   SCIP_Real cons_rhs = SCIPinfinity(_scipSP);
+   SCIP_Real item1_coeff = 0;
+   SCIP_Real item2_coeff = 0;
+   
+   assert(consData->_type == TOGETHER || consData->_type == SEPARATE);
+
+   if(consData->_type == TOGETHER) {
+      SCIPsnprintf(consName, 255, "C_TOG_%d_%d", item1, item2);
+      cons_rhs = cons_lhs = 0;
+      item1_coeff = 1;
+      item2_coeff = -1;
+   } else if(consData->_type == SEPARATE)
+   {
+      SCIPsnprintf(consName, 255, "C_SEP_%d_%d", item1, item2);
+      cons_rhs = cons_lhs = 0;
+      item1_coeff = item2_coeff = 1;
+   }
+
+   SCIPcreateConsLinear(_scipSP,
+                           &cons,
+                           consName,
+                           0,
+                           0,
+                           0,
+                           cons_lhs,
+                           cons_rhs,
+                           TRUE,
+                           TRUE,
+                           TRUE,
+                           TRUE,
+                           TRUE,
+                           TRUE,
+                           FALSE,
+                           FALSE,
+                           TRUE,
+                           FALSE);
+
+   SCIPaddCoefLinear(_scipSP, cons, _var_X[item1], item1_coeff);
+   SCIPaddCoefLinear(_scipSP, cons, _var_X[item2], item2_coeff);
+
+   SCIPaddCons(_scipSP, cons);
+
+   _cons_branching.push_back(cons);
+   SCIPreleaseCons(_scipSP, &cons);
+}
+
+void SubProblemMIP::deleteLastBranching()
+{
+   SCIPfreeTransform(_scipSP);                        // enable modifications
+   SCIPdelCons(_scipSP, _cons_branching.back());      // delete last added Constraint
+   SCIPreleaseCons(_scipSP, &_cons_branching.back()); // release Constraint
+   _cons_branching.pop_back();                        // reduce the vector
+}
+

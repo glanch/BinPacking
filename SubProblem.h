@@ -1,8 +1,11 @@
-/* SubProblem.h */
+#pragma once
 
 #include "DualVariables.h"
 #include "Instance.h"
 #include "Master.h"
+#include "Pattern.h"
+#include "SCIP_ConsData.h"
+
 
 using namespace std;
 using namespace scip;
@@ -10,25 +13,14 @@ using namespace scip;
 class SubProblemMIP
 {
 public:
-   // constructor
    SubProblemMIP(Instance* ins);
-
-   // destructor
    ~SubProblemMIP();
-
-   // to store one optimal solution of the Subproblem
-   struct solution
-   {
-      SCIP_Real         reducedCosts;
-      SCIP_Real         BinPatternCost;
-      vector<SCIP_Bool> BinPattern;
-   };
 
    // update the objective Function
    void updateObjFunc(DualVariables* duals, const bool isFarkas);
 
    // solve the problem
-   solution solve();
+   Pattern* solve();
 
    SCIP*     _scipSP; // pointer to the scip-env of the subproblem
    Instance* _ins;    // pointer to the instance
@@ -38,4 +30,9 @@ public:
 
    // constraints
    SCIP_CONS* _con_capacity;   // The capacity of the bin / knapsack is not exceeded
+
+   vector<SCIP_CONS*> _cons_branching;   // ryan-and-foster branching constraints
+
+   void addBranching(SCIP_ConsData* consData); // add a branching constraint
+   void deleteLastBranching();  
 };

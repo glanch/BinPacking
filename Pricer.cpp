@@ -119,13 +119,14 @@ SCIP_RESULT MyPricer::pricing(const bool isFarkas)
 
    Subproblem_mip->updateObjFunc(DualValues,
                                  isFarkas); // update objective function according to new dual variable values
-   SubProblemMIP::solution solution = Subproblem_mip->solve(); // and now, solve subproblem
+   Pattern* solution = Subproblem_mip->solve(); // and now, solve subproblem
 
    // if reduced costs are (sufficiently) negative, add the solution
-   if( SCIPisNegative(_scipRMP, solution.reducedCosts + 0.001) )
+   if( SCIPisNegative(_scipRMP, solution->reducedCosts + 0.001) )
    {
-      addNewVar(&solution);
-      display_one_variable(&solution);
+      addNewVar(solution);
+   } else { // the solution is not needed any longer, delete it
+      delete solution;
    }
 
    // since we are using an exact method to calculate the optimal reduced costs, we can always be
@@ -195,7 +196,7 @@ SCIP_RETCODE MyPricer::scip_farkas(SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT*
  * created variable is also added to a list of lambdas in the _pbMaster object. Finally, the function writes the updated
  * optimization model to a file for inspection.
  */
-void MyPricer::addNewVar(SubProblemMIP::solution* solution)
+void MyPricer::addNewVar(Pattern* solution)
 {
    // create the new variable
    SCIP_VAR* newVar;
@@ -212,8 +213,8 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
                  var_name,                 // set name
                  0.0,                      // lower bound
                  SCIPinfinity(_scipRMP),   // upper bound
-                 solution->BinPatternCost, // objective
-                 SCIP_VARTYPE_CONTINUOUS,  // continuous if only column-generation
+                 solution->PatternCosts, // objective
+                 SCIP_VARTYPE_BINARY,  // discrete since we are using discretization
                  false,
                  false,
                  NULL,
@@ -231,13 +232,21 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
    // onePatternPerItem constraint
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
-      SCIP_Real coeff = solution->BinPattern[i];
+      SCIP_Real coeff = solution->PatternIncidence[i];
       SCIPaddCoefLinear(_scipRMP, _pbMaster->_cons_onePatternPerItem[i], newVar, coeff);
    }
+   
+   // current variable index
+   int trans_counter = _pbMaster->_var_lambda.size();
 
+   // add variable to book keeping
    _pbMaster->_var_lambda.push_back(newVar);
 
-   int trans_counter = _pbMaster->_var_lambda.size();
+   // set pattern lambda index after "adding" lambda variable
+   solution->LambdaPatternIndex = trans_counter;
+
+   // add corresponding pattern to book keeping
+   _pbMaster->_Patterns.push_back(solution);
 
    char model_name[255];
    ( void )SCIPsnprintf(model_name, 255, "TransMasterProblems/TransMaster_%d.lp", trans_counter);
@@ -248,17 +257,17 @@ void MyPricer::addNewVar(SubProblemMIP::solution* solution)
  * @param solution The solution that should be printed
  * @note print the results of a calculation to the console. It takes the solution of SubProblem::solve() and prints it
  * to the console, along with some additional text. The function prints the reduced
- * and newly generated packing pattern costs. It then iterates through the BinPattern boolean vector and prints the
+ * and newly generated packing pattern costs. It then iterates through the PatternIncidence boolean vector and prints the
  * indices where the value is true, thus displaying whether an item is part of the new pattern.
  */
-void MyPricer::display_one_variable(SubProblemMIP::solution* solution)
+void MyPricer::display_one_variable(Pattern* solution)
 {
    cout << "Variable / new pattern with reduced costs: " << solution->reducedCosts
-        << " and PlanCosts: " << solution->BinPatternCost << endl
+        << " and PatternCosts: " << solution->PatternCosts << endl
         << "with items: ";
-   for( int i = 0; i < solution->BinPattern.size(); ++i )
+   for( int i = 0; i < solution->PatternIncidence.size(); ++i )
    {
-      if( solution->BinPattern[i] == true )
+      if( solution->PatternIncidence[i] == true )
          cout << i << " ";
    }
 

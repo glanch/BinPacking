@@ -1,3 +1,5 @@
+#include "BranchConsHdlr.h"
+#include "BranchRule.h"
 #include "CompactModel.h"
 #include "Master.h"
 #include "Pricer.h"
@@ -55,6 +57,23 @@ int main()
 
    // activate pricer_BPP_exact_mip
    SCIPactivatePricer(pbMaster->_scipRMP, SCIPfindPricer(pbMaster->_scipRMP, pricer_BPP_exact_mip->_name));
+
+   // include constraint handler to manage the branching constraints
+   BranchConsHdlr* RyanFosterConstraints = new BranchConsHdlr(pbMaster, pricer_BPP_exact_mip);
+
+   SCIPincludeObjConshdlr(pbMaster->_scipRMP, RyanFosterConstraints, true);
+
+   //=======================================================
+   // include the branching rule
+   BranchRule* RyanFosterBranching =
+      new BranchRule(pbMaster,
+                     "RyanFoster",
+                     "Child1: two items are in one bin together, Child2: two items are in different bins ",
+                     500000,
+                     -1,
+                     1);
+
+   //SCIPincludeObjBranchrule(pbMaster->_scipRMP, RyanFosterBranching, true);
 
    //==========================================
    // solve the master problem

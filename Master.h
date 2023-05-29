@@ -8,6 +8,7 @@
 #include "objscip/objscip.h"
 #include "objscip/objscipdefplugins.h"
 
+#include "Pattern.h"
 using namespace scip;
 
 /**
@@ -31,9 +32,11 @@ public:
 
    // Variables
    vector<SCIP_VAR*> _var_lambda; // lambda_p: a vector of all decision-variables lambda
+   vector<Pattern*> _Patterns; // a vector of all patterns, corresponding to decision-variables lambda, ordered in time of added
 
    // constraints
    vector<SCIP_CONS*> _cons_onePatternPerItem; // (i) Each item i must be in exactly one pattern p
+   vector<SCIP_CONSDATA*> _cons_branching; // branching constraints for R&F
 
    // solve the problem void solve();
    void solve();

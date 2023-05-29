@@ -15,6 +15,8 @@ add_executable(BPP
     Master.cpp
     Pricer.cpp
     SubProblem.cpp
+    BranchConsHdlr.cpp
+    BranchRule.cpp
 )
 
 target_link_libraries(BPP ${SCIP_LIBRARIES} stdc++fs)
