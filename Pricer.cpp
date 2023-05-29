@@ -212,7 +212,7 @@ void MyPricer::addNewVar(Pattern* solution)
                  &newVar,                  // connect with the new variable
                  var_name,                 // set name
                  0.0,                      // lower bound
-                 SCIPinfinity(_scipRMP),   // upper bound
+                 1,   // upper bound
                  solution->PatternCosts, // objective
                  SCIP_VARTYPE_BINARY,  // discrete since we are using discretization
                  false,
