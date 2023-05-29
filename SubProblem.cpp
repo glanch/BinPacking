@@ -169,8 +169,13 @@ Pattern* SubProblemMIP::solve()
    for( int i = 0; i < _ins->_nbItems; ++i )
    {
       // Item is part of pattern if corresponding variable in Pricing Sub Problem is bigger than 0.5
-      sol->PatternIncidence[i] = SCIPgetSolVal(_scipSP, scip_sol, _var_X[i]) > 0.5;
-      sol->includedItems.push_back(i);
+      auto item_included = SCIPgetSolVal(_scipSP, scip_sol, _var_X[i]) > 0.5;
+      
+      sol->PatternIncidence[i] = item_included;
+      
+      if(item_included) {
+         sol->includedItems.push_back(i);
+      }
    }
 
    return sol;
