@@ -73,7 +73,7 @@ int main()
                      -1,
                      1);
 
-   //SCIPincludeObjBranchrule(pbMaster->_scipRMP, RyanFosterBranching, true);
+   SCIPincludeObjBranchrule(pbMaster->_scipRMP, RyanFosterBranching, true);
 
    //==========================================
    // solve the master problem
