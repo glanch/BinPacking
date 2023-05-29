@@ -25,7 +25,12 @@ public:
    int               sub_m;
    int               LambdaPatternIndex;
 
-   void display() {}
+   void display() {
+      cout << "Pattern " << LambdaPatternIndex << endl;
+      for(auto item : includedItems) {
+         cout << "\t Item " << item << endl;
+      }
+   }
 
    // return true if the Pattern contains both item1 AND item2, false otherwise
    bool containsBOTH(int item1, int item2)

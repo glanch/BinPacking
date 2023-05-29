@@ -121,7 +121,27 @@ void Master::solve()
  * this case, NULL), and a Boolean value indicating whether to display the solution in verbose mode (in this case,
  * FALSE). The function does not return any value.
  */
-void Master::displaySolution() { SCIPprintBestSol(_scipRMP, NULL, FALSE); }
+void Master::displaySolution() { 
+   SCIPprintBestSol(_scipRMP, NULL, FALSE); 
+
+   // display selected patterns
+   cout << "Selected patterns: " << endl;
+   for(auto pattern_ptr : _Patterns) {
+      auto lambda_value = SCIPgetVarSol(_scipRMP, _var_lambda[pattern_ptr->LambdaPatternIndex]); 
+      if(lambda_value > 0.5) { // lambda value is positive, thus included
+         pattern_ptr->display();
+         // count total weight of included items in pattern
+         int total_weight = 0;
+         for(auto item : pattern_ptr->includedItems) {
+            total_weight += _ins->par_w[item];
+         }
+
+         assert(total_weight <= _ins->par_b);
+
+         cout << "Total weight: " << total_weight << endl << endl;
+      }
+   }
+}
 
 /**
  * @brief Set the SCIP parameters
