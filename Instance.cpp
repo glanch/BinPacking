@@ -110,7 +110,9 @@ void Instance::readBPA(string nameFile)
 
 
          // set optimal_value
-         ss >> optimal_value;
+         // ss >> optimal_value; 
+         // TODO: include somewhere else
+         
          break; // jump to the end of the switch-statement
       }
       default: // read w_i: weight for item i
