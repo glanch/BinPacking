@@ -26,12 +26,16 @@ public:
    int _nbItems; // Setsize of Items (i \in I)
    int _nbBins;  // Setsize of Bins (j \in J)
 
+   double         optimal_value; // optimal objective value of this instance
+
    // Parameters
    double         par_b; // b - capacity of a single bin
+
    vector<double> par_w; // w_i - weight of item i \in I
                          // dimension: _nbItems
 
    void read(string nameFile); // function to read data from a file
+   void readBPA(string nameFile); // function to read BPA data (see SCIP) from a file
 
    void display(); // function to display the data
 };

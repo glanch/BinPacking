@@ -74,6 +74,63 @@ void Instance::read(string nameFile)
    infile.close();
 }
 
+void Instance::readBPA(string nameFile)
+{
+   ifstream infile(nameFile);
+   if( !infile ) //! warning, if file-path is wrong, pay attention, the code will not stop!
+      cout << "Instance::read : file not found"
+           << "\n";
+
+   string line; // a string, which stores a single line
+
+   int line_number = 0;
+   while( getline(infile, line) ) // do this for every line in the file, if there is any
+   {
+      istringstream ss(line); // ss is a string stream of the line, which makes it possible to get different
+                              // strings separated by spaces
+
+      switch( line_number ) // Instead of using multiple if-statements, we use a switch statement: if(par_name == '')
+      {
+      case 0: // read parameter name
+      {
+         // ignore
+         break;
+      }
+      case 1: // read number of capacity, bins, and objective value
+      {
+         // set par_b - capacity
+         ss >> par_b;
+
+         // set _nbItems and _nbBins
+         ss >> _nbItems;
+         _nbBins  = _nbItems;
+
+         // as par_w depends on the number of items, we are resizing them
+         par_w.resize(_nbItems, 0);
+
+
+         // set optimal_value
+         ss >> optimal_value;
+         break; // jump to the end of the switch-statement
+      }
+      default: // read w_i: weight for item i
+      {
+         int    item = line_number - 2;
+         double weight;
+         ss >> weight;
+         par_w[item] = weight;
+         break;
+      }
+
+         // if no of the key-chars is at the beginning, ignore the whole line and do nothing
+      }
+
+      line_number++;
+   }
+   infile.close();
+}
+
+
 /**
  * @brief function to display the instance-data
  *
