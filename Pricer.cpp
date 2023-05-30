@@ -158,6 +158,7 @@ SCIP_RETCODE MyPricer::scip_redcost(SCIP*        scip,
    // start dual-pricing with isFarkas-Flag = false
    *result = pricing(false);
 
+   cout << endl;
    return SCIP_OKAY;
 }
 
@@ -178,6 +179,8 @@ SCIP_RETCODE MyPricer::scip_farkas(SCIP* scip, SCIP_PRICER* pricer, SCIP_RESULT*
    cout << "Farkas-Pricing: ";
    // start dual-pricing with isFarkas-Flag = false
    *result = pricing(true);
+
+   cout << endl;
 
    return SCIP_OKAY;
 }
