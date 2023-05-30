@@ -18,14 +18,15 @@ int main()
 {
    // #####################################################################################################################
    //  Settings
-   string InstanceName = "../data/Ins_01.bpp";
+   string InstanceName = "../data/bpa/u20_00.bpa";
 
    // #####################################################################################################################
    //  read and display the instance
    Instance* ins = new Instance();
-   ins->read(InstanceName);
+   ins->readBPA(InstanceName);
    ins->display();
 
+#ifdef SOLVE_COMPACT
    // #####################################################################################################################
    //  create compact problem
 
@@ -38,6 +39,7 @@ int main()
 
    // after we are finished, we free the memory of compact model
    delete compMod;
+#endif
 
    // proceed with CG
    Master* pbMaster = new Master(ins);
