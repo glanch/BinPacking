@@ -1,0 +1,28 @@
+p FILE: test.binpacking
+p SOURCE: Madita Kölbel
+p DESCRIPTION: Testing_Instance for the binpacking 
+
+I   20
+J   20
+
+b 150
+w 1 94
+w 2 69
+w 3 32
+w 4 96
+w 5 70
+w 6 84
+w 7 58
+w 8 78
+w 9 25
+w 10 80
+w 11 58
+w 12 66
+w 13 83
+w 14 24
+w 15 98
+w 16 60
+w 17 42
+w 18 43
+w 19 43
+w 20 39
