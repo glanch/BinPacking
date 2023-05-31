@@ -124,6 +124,7 @@ void Master::solve()
 void Master::displaySolution() { 
    SCIPprintBestSol(_scipRMP, NULL, FALSE); 
 
+   return; // TODO: fix this bug here
    // display selected patterns
    cout << "Selected patterns: " << endl;
    for(auto pattern_ptr : _Patterns) {
